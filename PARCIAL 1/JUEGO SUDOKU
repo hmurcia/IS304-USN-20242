@@ -1,81 +1,3 @@
-public class Sudoku {
-    // Atributo: matriz de matrices 3x3 que representan cada bloque del Sudoku
-    private int[][][][] celdas;
-
-    // Constructor que inicializa la matriz de 3x3 de matrices 3x3
-    public Sudoku() {
-        celdas = new int[3][3][3][3];  // Inicializa con ceros
-    }
-
-    // Método para asignar un valor a una celda en el bloque correspondiente
-    public void setValor(int bloqueFila, int bloqueColumna, int fila, int columna, int valor) {
-        if (bloqueFila >= 0 && bloqueFila < 3 && bloqueColumna >= 0 && bloqueColumna < 3 &&
-            fila >= 0 && fila < 3 && columna >= 0 && columna < 3 && valor >= 1 && valor <= 9) {
-            celdas[bloqueFila][bloqueColumna][fila][columna] = valor;
-        } else {
-            System.out.println("Valores inválidos");
-        }
-    }
-
-    // Método para obtener el valor de una celda
-    public int getValor(int bloqueFila, int bloqueColumna, int fila, int columna) {
-        if (bloqueFila >= 0 && bloqueFila < 3 && bloqueColumna >= 0 && bloqueColumna < 3 &&
-            fila >= 0 && fila < 3 && columna >= 0 && columna < 3) {
-            return celdas[bloqueFila][bloqueColumna][fila][columna];
-        } else {
-            System.out.println("Posición inválida");
-            return -1;
-        }
-    }
-
-    // Método para imprimir el tablero
-    public void imprimirTablero() {
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                for (int k = 0; k < 3; k++) {
-                    for (int l = 0; l < 3; l++) {
-                        System.out.print(celdas[i][j][k][l] + " ");
-                    }
-                    System.out.println();
-                }
-                System.out.println("---");
-            }
-        }
-    }
-
-    public static void main(String[] args) {
-        Sudoku sudoku = new Sudoku();
-        sudoku.setValor(0, 0, 0, 0, 5);
-        sudoku.setValor(1, 1, 1, 1, 3);
-        sudoku.imprimirTablero();
-    }
-}
-Explicación:
-Opción 1: Usamos una matriz de 9x9 para representar el tablero de Sudoku completo. Cada celda puede ser accesible usando las coordenadas (fila, columna).
-Opción 2: Representamos el Sudoku como una matriz de 3x3 que contiene matrices de 3x3. Así, podemos dividir el tablero en 9 subcuadrantes (o bloques) de 3x3.
-Estas implementaciones permiten crear la estructura básica de un juego de Sudoku. Puedes agregar más métodos según sea necesario, como validaciones para las reglas del Sudoku.
-
-Visita nuestra web para obtener más información: GPTOnline
-
-Si te gusta el dibujo, explora estos recursos: Dibujos Para Colorear
-
-
-
-
-
-Tú dijiste:
-hazme un SUdoco en java completo jugable
-ChatGPT Plus
-
-Aquí te dejo un ejemplo completo de un Sudoku jugable en Java. Este programa te permitirá:
-
-Crear un tablero de Sudoku.
-Insertar valores en el tablero.
-Validar que los valores sean correctos (según las reglas del Sudoku).
-Jugar el Sudoku hasta que se resuelva correctamente.
-Código completo:
-java
-Copiar código
 import java.util.Scanner;
 
 public class Sudoku {
@@ -104,10 +26,19 @@ public class Sudoku {
     }
 
     // Método para insertar un valor en una celda
-    public boolean insertarValor(int fila, int columna, int valor) {
+    public boolean insertarValor(int fila, int columna, int valor, Scanner scanner) {
         if (valor < 1 || valor > 9 || fila < 0 || fila >= 9 || columna < 0 || columna >= 9) {
             System.out.println("Entrada inválida. Asegúrate de que los valores sean entre 1 y 9 y dentro del rango de la cuadrícula.");
             return false;
+        }
+
+        if (tablero[fila][columna] != VACIO) {
+            System.out.println("La posición [" + (fila + 1) + ", " + (columna + 1) + "] ya está ocupada con el número " + tablero[fila][columna] + ".");
+            System.out.print("¿Deseas reemplazar este valor? (s/n): ");
+            String respuesta = scanner.next();
+            if (!respuesta.equalsIgnoreCase("s")) {
+                return false;
+            }
         }
 
         if (!esValido(fila, columna, valor)) {
@@ -183,7 +114,7 @@ public class Sudoku {
             int columna = scanner.nextInt() - 1;
             int valor = scanner.nextInt();
 
-            if (sudoku.insertarValor(fila, columna, valor)) {
+            if (sudoku.insertarValor(fila, columna, valor, scanner)) {
                 System.out.println("Valor insertado correctamente.");
             } else {
                 System.out.println("No se pudo insertar el valor. Intenta nuevamente.");
