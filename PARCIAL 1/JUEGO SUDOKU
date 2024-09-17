@@ -1,127 +1,222 @@
+class Matriz {
+    private int[][] box;
+
+    public Matriz() {
+        box = new int[3][3];
+    }
+
+    // Obtener el valor de una celda
+    public int get(int fila, int columna) {
+        return box[fila][columna];
+    }
+
+    // Establecer el valor de una celda
+    public void set(int fila, int columna, int valor) {
+        box[fila][columna] = valor;
+    }
+
+    // Comprobar si el cuadro está completo
+    public boolean estaCompleto() {
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (box[i][j] == 0) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+}
+////
 import java.util.Scanner;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.File;
+import java.util.Random;
 
 public class Sudoku {
     private int[][] tablero;
-    private final int VACIO = 0;  // Representa una celda vacía
+    private StringBuilder registroMovimientos;  // Para almacenar los movimientos
 
-    // Constructor que inicializa el tablero de Sudoku
+    // Constructor para inicializar el tablero vacío
     public Sudoku() {
         tablero = new int[9][9];
+        registroMovimientos = new StringBuilder();
     }
 
-    // Método para mostrar el tablero en consola
+    // Mostrar el tablero en pantalla
     public void mostrarTablero() {
         for (int i = 0; i < 9; i++) {
             if (i % 3 == 0 && i != 0) {
-                System.out.println("------+-------+------");  // Línea separadora entre bloques
+                System.out.println("------+-------+------");
             }
             for (int j = 0; j < 9; j++) {
                 if (j % 3 == 0 && j != 0) {
                     System.out.print("| ");
                 }
-                System.out.print(tablero[i][j] == VACIO ? ". " : tablero[i][j] + " ");
+                System.out.print(tablero[i][j] == 0 ? ". " : tablero[i][j] + " ");
             }
             System.out.println();
         }
     }
 
-    // Método para insertar un valor en una celda
-    public boolean insertarValor(int fila, int columna, int valor, Scanner scanner) {
-        if (valor < 1 || valor > 9 || fila < 0 || fila >= 9 || columna < 0 || columna >= 9) {
-            System.out.println("Entrada inválida. Asegúrate de que los valores sean entre 1 y 9 y dentro del rango de la cuadrícula.");
-            return false;
-        }
+    // Llenar el tablero con una cantidad aleatoria de números
+    public void llenarTableroAleatoriamente(int cantidad) {
+        Random rand = new Random();
+        int llenadas = 0;
+        while (llenadas < cantidad) {
+            int fila = rand.nextInt(9);
+            int columna = rand.nextInt(9);
+            int valor = rand.nextInt(9) + 1;  // Valores entre 1 y 9
 
-        if (tablero[fila][columna] != VACIO) {
-            System.out.println("La posición [" + (fila + 1) + ", " + (columna + 1) + "] ya está ocupada con el número " + tablero[fila][columna] + ".");
-            System.out.print("¿Deseas reemplazar este valor? (s/n): ");
-            String respuesta = scanner.next();
-            if (!respuesta.equalsIgnoreCase("s")) {
-                return false;
+            if (tablero[fila][columna] == 0 && esValido(fila, columna, valor)) {
+                tablero[fila][columna] = valor;
+                llenadas++;
             }
         }
+    }
 
-        if (!esValido(fila, columna, valor)) {
-            System.out.println("El valor no es válido en esa posición.");
+    // Insertar un valor en el tablero
+    public boolean insertarValor(int fila, int columna, int valor) {
+        if (fila < 0 || fila >= 9 || columna < 0 || columna >= 9 || valor < 1 || valor > 9) {
+            System.out.println("Entrada inválida.");
             return false;
         }
 
-        tablero[fila][columna] = valor;
-        return true;
+        if (tablero[fila][columna] != 0) {
+            System.out.println("La posición ya está ocupada.");
+            return false;
+        }
+
+        if (esValido(fila, columna, valor)) {
+            tablero[fila][columna] = valor;
+            registrarMovimiento(fila, columna, valor);
+            return true;
+        }
+
+        System.out.println("El valor no es válido.");
+        return false;
     }
 
-    // Método para validar si un valor puede colocarse en una celda según las reglas de Sudoku
+    // Verificar si el valor es válido según las reglas del Sudoku
     private boolean esValido(int fila, int columna, int valor) {
-        // Comprobar si el valor ya está en la fila
+        // Verificar fila
         for (int i = 0; i < 9; i++) {
-            if (tablero[fila][i] == valor) {
-                return false;
-            }
+            if (tablero[fila][i] == valor) return false;
         }
-
-        // Comprobar si el valor ya está en la columna
+        // Verificar columna
         for (int i = 0; i < 9; i++) {
-            if (tablero[i][columna] == valor) {
-                return false;
-            }
+            if (tablero[i][columna] == valor) return false;
         }
-
-        // Comprobar si el valor ya está en el bloque 3x3
-        int bloqueFila = (fila / 3) * 3;
-        int bloqueColumna = (columna / 3) * 3;
-        for (int i = bloqueFila; i < bloqueFila + 3; i++) {
-            for (int j = bloqueColumna; j < bloqueColumna + 3; j++) {
-                if (tablero[i][j] == valor) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    // Método para comprobar si el tablero está completo
-    public boolean estaCompleto() {
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
-                if (tablero[i][j] == VACIO) {
-                    return false;
-                }
+        // Verificar cuadro 3x3
+        int cuadroFila = (fila / 3) * 3;
+        int cuadroColumna = (columna / 3) * 3;
+        for (int i = cuadroFila; i < cuadroFila + 3; i++) {
+            for (int j = cuadroColumna; j < cuadroColumna + 3; j++) {
+                if (tablero[i][j] == valor) return false;
             }
         }
         return true;
     }
 
-    // Método principal para jugar Sudoku
+    // Método para registrar el movimiento
+    private void registrarMovimiento(int fila, int columna, int valor) {
+        registroMovimientos.append("Fila: " + (fila + 1) + ", Columna: " + (columna + 1) + ", Valor: " + valor + "\n");
+    }
+
+    // Guardar la partida en un archivo de texto
+    public void guardarPartida(String nombreArchivo) {
+        try (FileWriter writer = new FileWriter(nombreArchivo)) {
+            writer.write(registroMovimientos.toString());
+            System.out.println("Partida guardada en " + nombreArchivo);
+        } catch (IOException e) {
+            System.out.println("Error al guardar la partida.");
+        }
+    }
+
+    // Reproducir la partida desde el archivo
+    public void reproducirPartida(String nombreArchivo) {
+        try (Scanner scanner = new Scanner(new File(nombreArchivo))) {
+            while (scanner.hasNextLine()) {
+                System.out.println(scanner.nextLine());
+                Thread.sleep(1000);  // Pausa para reproducir el movimiento lentamente
+            }
+        } catch (IOException | InterruptedException e) {
+            System.out.println("Error al reproducir la partida.");
+        }
+    }
+
+    // Comprobar si un cuadro 3x3 está completo
+    public boolean cuadroCompleto(int fila, int columna) {
+        int cuadroFila = (fila / 3) * 3;
+        int cuadroColumna = (columna / 3) * 3;
+        for (int i = cuadroFila; i < cuadroFila + 3; i++) {
+            for (int j = cuadroColumna; j < cuadroColumna + 3; j++) {
+                if (tablero[i][j] == 0) return false;
+            }
+        }
+        return true;
+    }
+
+    // Comprobar si una fila está completa
+    public boolean filaCompleta(int fila) {
+        for (int i = 0; i < 9; i++) {
+            if (tablero[fila][i] == 0) return false;
+        }
+        return true;
+    }
+
+    // Comprobar si una columna está completa
+    public boolean columnaCompleta(int columna) {
+        for (int i = 0; i < 9; i++) {
+            if (tablero[i][columna] == 0) return false;
+        }
+        return true;
+    }
+
+    // Método principal
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         Sudoku sudoku = new Sudoku();
 
-        // Prellenar el tablero (puedes modificarlo para que sea más fácil o más difícil)
-        sudoku.tablero[0][0] = 5;
-        sudoku.tablero[1][1] = 3;
-        sudoku.tablero[2][2] = 7;
-        sudoku.tablero[0][4] = 6;
-        sudoku.tablero[4][4] = 8;
-        sudoku.tablero[8][8] = 9;
+        System.out.println("Bienvenido al juego de Sudoku.");
+        System.out.println("¿Deseas iniciar con un tablero vacío o con casillas llenas? (1 - Vacío, 2 - Llenar aleatoriamente)");
+        int opcion = scanner.nextInt();
 
-        System.out.println("¡Bienvenido al juego de Sudoku!");
-
-        while (!sudoku.estaCompleto()) {
-            sudoku.mostrarTablero();
-            System.out.println("Introduce el número en la forma: fila columna valor (por ejemplo: 1 2 3)");
-            int fila = scanner.nextInt() - 1;  // Para que las filas/columnas empiecen desde 1
-            int columna = scanner.nextInt() - 1;
-            int valor = scanner.nextInt();
-
-            if (sudoku.insertarValor(fila, columna, valor, scanner)) {
-                System.out.println("Valor insertado correctamente.");
+        if (opcion == 2) {
+            System.out.println("¿Cuántas casillas deseas llenar? (Entre 9 y 21):");
+            int cantidad = scanner.nextInt();
+            if (cantidad >= 9 && cantidad <= 21) {
+                sudoku.llenarTableroAleatoriamente(cantidad);
             } else {
-                System.out.println("No se pudo insertar el valor. Intenta nuevamente.");
+                System.out.println("Cantidad no válida, iniciando con tablero vacío.");
             }
         }
 
-        System.out.println("¡Felicidades! Has completado el Sudoku.");
-        scanner.close();
-    }
-}
+        while (true) {
+            sudoku.mostrarTablero();
+            System.out.println("Introduce el número en la forma: fila columna valor (por ejemplo: 1 2 3)");
+            int fila = scanner.nextInt() - 1;
+            int columna = scanner.nextInt() - 1;
+            int valor = scanner.nextInt();
+
+            if (sudoku.insertarValor(fila, columna, valor)) {
+                // Comprobar si se completó una fila, columna o cuadro 3x3
+                if (sudoku.filaCompleta(fila)) {
+                    System.out.println("¡Fila completada!");
+                }
+                if (sudoku.columnaCompleta(columna)) {
+                    System.out.println("¡Columna completada!");
+                }
+                if (sudoku.cuadroCompleto(fila, columna)) {
+                    System.out.println("¡Cuadro 3x3 completado!");
+                }
+            }
+
+            System.out.println("¿Deseas guardar la partida? (s/n): ");
+            String respuesta = scanner.next();
+            if (respuesta.equalsIgnoreCase("s")) {
+                sudoku.guardarPartida("partida_sudoku.txt");
+            }
+
+
