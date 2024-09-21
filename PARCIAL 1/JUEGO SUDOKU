@@ -1,3 +1,33 @@
+class Matriz {
+    private int[][] box;
+
+    public Matriz() {
+        box = new int[3][3];
+    }
+
+    // Obtener el valor de una celda
+    public int get(int fila, int columna) {
+        return box[fila][columna];
+    }
+
+    // Establecer el valor de una celda
+    public void set(int fila, int columna, int valor) {
+        box[fila][columna] = valor;
+    }
+
+    // Comprobar si el cuadro está completo
+    public boolean estaCompleto() {
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (box[i][j] == 0) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+}
+///
 import java.util.Scanner;
 import java.io.FileWriter;
 import java.io.IOException;
