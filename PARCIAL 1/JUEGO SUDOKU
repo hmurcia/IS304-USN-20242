@@ -141,82 +141,32 @@ public class Sudoku {
                 System.out.println(scanner.nextLine());
                 Thread.sleep(1000);  // Pausa para reproducir el movimiento lentamente
             }
-        } catch (IOException | InterruptedException e) {
-            System.out.println("Error al reproducir la partida.");
+        } catch (IOException e) {
+            System.out.println("Error al leer el archivo.");
+        } catch (InterruptedException e) {
+            System.out.println("Error en la reproducción.");
         }
     }
 
-    // Comprobar si un cuadro 3x3 está completo
-    public boolean cuadroCompleto(int fila, int columna) {
-        int cuadroFila = (fila / 3) * 3;
-        int cuadroColumna = (columna / 3) * 3;
-        for (int i = cuadroFila; i < cuadroFila + 3; i++) {
-            for (int j = cuadroColumna; j < cuadroColumna + 3; j++) {
-                if (tablero[i][j] == 0) return false;
-            }
-        }
-        return true;
-    }
-
-    // Comprobar si una fila está completa
-    public boolean filaCompleta(int fila) {
-        for (int i = 0; i < 9; i++) {
-            if (tablero[fila][i] == 0) return false;
-        }
-        return true;
-    }
-
-    // Comprobar si una columna está completa
-    public boolean columnaCompleta(int columna) {
-        for (int i = 0; i < 9; i++) {
-            if (tablero[i][columna] == 0) return false;
-        }
-        return true;
-    }
-
-    // Método principal
+    // Método principal para ejecutar el programa
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
         Sudoku sudoku = new Sudoku();
+        sudoku.llenarTableroAleatoriamente(20);
+        sudoku.mostrarTablero();
 
-        System.out.println("Bienvenido al juego de Sudoku.");
-        System.out.println("¿Deseas iniciar con un tablero vacío o con casillas llenas? (1 - Vacío, 2 - Llenar aleatoriamente)");
-        int opcion = scanner.nextInt();
-
-        if (opcion == 2) {
-            System.out.println("¿Cuántas casillas deseas llenar? (Entre 9 y 21):");
-            int cantidad = scanner.nextInt();
-            if (cantidad >= 9 && cantidad <= 21) {
-                sudoku.llenarTableroAleatoriamente(cantidad);
-            } else {
-                System.out.println("Cantidad no válida, iniciando con tablero vacío.");
-            }
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            System.out.println("Ingrese fila, columna y valor (o -1 para salir): ");
+            int fila = scanner.nextInt();
+            if (fila == -1) break;
+            int columna = scanner.nextInt();
+            int valor = scanner.nextInt();
+            sudoku.insertarValor(fila - 1, columna - 1, valor);
+            sudoku.mostrarTablero();
         }
 
-        while (true) {
-            sudoku.mostrarTablero();
-            System.out.println("Introduce el número en la forma: fila columna valor (por ejemplo: 1 2 3)");
-            int fila = scanner.nextInt() - 1;
-            int columna = scanner.nextInt() - 1;
-            int valor = scanner.nextInt();
-
-            if (sudoku.insertarValor(fila, columna, valor)) {
-                // Comprobar si se completó una fila, columna o cuadro 3x3
-                if (sudoku.filaCompleta(fila)) {
-                    System.out.println("¡Fila completada!");
-                }
-                if (sudoku.columnaCompleta(columna)) {
-                    System.out.println("¡Columna completada!");
-                }
-                if (sudoku.cuadroCompleto(fila, columna)) {
-                    System.out.println("¡Cuadro 3x3 completado!");
-                }
-            }
-
-            System.out.println("¿Deseas guardar la partida? (s/n): ");
-            String respuesta = scanner.next();
-            if (respuesta.equalsIgnoreCase("s")) {
-                sudoku.guardarPartida("partida_sudoku.txt");
-            }
-
-
+        sudoku.guardarPartida("sudoku_partida.txt");
+        System.out.println("Reproduciendo partida guardada:");
+        sudoku.reproducirPartida("sudoku_partida.txt");
+    }
+}
