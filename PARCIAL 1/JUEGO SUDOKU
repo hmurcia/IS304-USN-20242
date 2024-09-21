@@ -27,7 +27,7 @@ class Matriz {
         return true;
     }
 }
-///
+/// clase Sudoku
 import java.util.Scanner;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -35,10 +35,9 @@ import java.io.File;
 import java.util.Random;
 
 public class Sudoku {
-    // Clase Sudoku
-
-    private int[][] tablero;  // Atributo no estático
-    private StringBuilder registroMovimientos;  // Atributo no estático
+    // Atributos del Sudoku
+    private int[][] tablero;  // Tablero de Sudoku
+    private StringBuilder registroMovimientos;  // Registro de los movimientos realizados
 
     // Constructor para inicializar el tablero vacío
     public Sudoku() {
@@ -46,7 +45,7 @@ public class Sudoku {
         registroMovimientos = new StringBuilder();
     }
 
-    // Método no estático para mostrar el tablero en pantalla
+    // Método para mostrar el tablero en pantalla
     public void mostrarTablero() {
         for (int i = 0; i < 9; i++) {
             if (i % 3 == 0 && i != 0) {
@@ -62,7 +61,7 @@ public class Sudoku {
         }
     }
 
-    // Método no estático para llenar el tablero con una cantidad aleatoria de números
+    // Método para llenar el tablero con una cantidad aleatoria de números
     public void llenarTableroAleatoriamente(int cantidad) {
         Random rand = new Random();
         int llenadas = 0;
@@ -78,7 +77,7 @@ public class Sudoku {
         }
     }
 
-    // Método no estático para insertar un valor en el tablero
+    // Método para insertar un valor en el tablero
     public boolean insertarValor(int fila, int columna, int valor) {
         Scanner scanner = new Scanner(System.in);
 
@@ -98,6 +97,22 @@ public class Sudoku {
         if (esValido(fila, columna, valor)) {
             tablero[fila][columna] = valor;
             registrarMovimiento(fila, columna, valor);
+
+            // Verificar si la fila está completa
+            if (filaCompleta(fila)) {
+                System.out.println("¡Fila " + (fila + 1) + " completada!");
+            }
+
+            // Verificar si la columna está completa
+            if (columnaCompleta(columna)) {
+                System.out.println("¡Columna " + (columna + 1) + " completada!");
+            }
+
+            // Verificar si el cuadro 3x3 está completo
+            if (cuadroCompleto(fila, columna)) {
+                System.out.println("¡Cuadro 3x3 completado!");
+            }
+
             return true;
         }
 
@@ -105,15 +120,17 @@ public class Sudoku {
         return false;
     }
 
-    // Método no estático para verificar si el valor es válido según las reglas del Sudoku
+    // Método para verificar si el valor es válido según las reglas del Sudoku
     private boolean esValido(int fila, int columna, int valor) {
-        // Método puro (no modifica el estado del objeto)
+        // Verifica la fila
         for (int i = 0; i < 9; i++) {
             if (tablero[fila][i] == valor) return false;
         }
+        // Verifica la columna
         for (int i = 0; i < 9; i++) {
             if (tablero[i][columna] == valor) return false;
         }
+        // Verifica el cuadro 3x3
         int cuadroFila = (fila / 3) * 3;
         int cuadroColumna = (columna / 3) * 3;
         for (int i = cuadroFila; i < cuadroFila + 3; i++) {
@@ -124,12 +141,12 @@ public class Sudoku {
         return true;
     }
 
-    // Método no estático para registrar el movimiento
+    // Método para registrar el movimiento
     private void registrarMovimiento(int fila, int columna, int valor) {
         registroMovimientos.append("Fila: " + (fila + 1) + ", Columna: " + (columna + 1) + ", Valor: " + valor + "\n");
     }
 
-    // Método no estático para guardar la partida en un archivo de texto
+    // Método para guardar la partida en un archivo de texto
     public void guardarPartida(String nombreArchivo) {
         try (FileWriter writer = new FileWriter(nombreArchivo)) {
             writer.write(registroMovimientos.toString());
@@ -139,7 +156,7 @@ public class Sudoku {
         }
     }
 
-    // Método no estático para reproducir la partida desde el archivo
+    // Método para reproducir la partida desde el archivo
     public void reproducirPartida(String nombreArchivo) {
         try (Scanner scanner = new Scanner(new File(nombreArchivo))) {
             while (scanner.hasNextLine()) {
@@ -153,25 +170,114 @@ public class Sudoku {
         }
     }
 
-    // Método principal para ejecutar el programa
+    // Método para verificar si una fila está completa
+    private boolean filaCompleta(int fila) {
+        boolean[] presente = new boolean[9];
+        for (int i = 0; i < 9; i++) {
+            int valor = tablero[fila][i];
+            if (valor == 0 || presente[valor - 1]) return false;  // Si hay un 0 o un duplicado
+            presente[valor - 1] = true;
+        }
+        return true;  // Todos los números del 1 al 9 están presentes
+    }
+
+    // Método para verificar si una columna está completa
+    private boolean columnaCompleta(int columna) {
+        boolean[] presente = new boolean[9];
+        for (int i = 0; i < 9; i++) {
+            int valor = tablero[i][columna];
+            if (valor == 0 || presente[valor - 1]) return false;
+            presente[valor - 1] = true;
+        }
+        return true;
+    }
+
+    // Método para verificar si un cuadro 3x3 está completo
+    private boolean cuadroCompleto(int fila, int columna) {
+        boolean[] presente = new boolean[9];
+        int cuadroFila = (fila / 3) * 3;
+        int cuadroColumna = (columna / 3) * 3;
+        for (int i = cuadroFila; i < cuadroFila + 3; i++) {
+            for (int j = cuadroColumna; j < cuadroColumna + 3; j++) {
+                int valor = tablero[i][j];
+                if (valor == 0 || presente[valor - 1]) return false;
+                presente[valor - 1] = true;
+            }
+        }
+        return true;
+    }
+
+    // Método para obtener los movimientos realizados
+    public String obtenerMovimientos() {
+        return registroMovimientos.toString();
+    }
+
+    // Método principal que incluye el menú de opciones
     public static void main(String[] args) {
         Sudoku sudoku = new Sudoku();  // Creación de un objeto Sudoku
-        sudoku.llenarTableroAleatoriamente(20);
-        sudoku.mostrarTablero();
-
         Scanner scanner = new Scanner(System.in);
-        while (true) {
-            System.out.println("Ingrese fila, columna y valor (o -1 para salir): ");
-            int fila = scanner.nextInt();
-            if (fila == -1) break;
-            int columna = scanner.nextInt();
-            int valor = scanner.nextInt();
-            sudoku.insertarValor(fila - 1, columna - 1, valor);
-            sudoku.mostrarTablero();
-        }
 
-        sudoku.guardarPartida("sudoku_partida.txt");
-        System.out.println("Reproduciendo partida guardada:");
-        sudoku.reproducirPartida("sudoku_partida.txt");
+        boolean continuar = true;
+
+        while (continuar) {
+            System.out.println("\n--- Menú de Sudoku ---");
+            System.out.println("1. Jugar nueva partida");
+            System.out.println("2. Insertar valor");
+            System.out.println("3. Mostrar tablero");
+            System.out.println("4. Guardar partida");
+            System.out.println("5. Reproducir partida guardada");
+            System.out.println("6. Salir");
+            System.out.print("Seleccione una opción: ");
+            int opcion = scanner.nextInt();
+
+            switch (opcion) {
+                case 1:
+                    // Iniciar nueva partida
+                    sudoku = new Sudoku();  // Crear nuevo objeto Sudoku
+                    sudoku.llenarTableroAleatoriamente(20);
+                    System.out.println("Nueva partida iniciada.");
+                    sudoku.mostrarTablero();
+                    break;
+
+                case 2:
+                    // Insertar valor en el tablero
+                    System.out.println("Ingrese fila, columna y valor (1-9) (o -1 para salir de la inserción): ");
+                    int fila = scanner.nextInt();
+                    if (fila == -1) break;
+                    int columna = scanner.nextInt();
+                    int valor = scanner.nextInt();
+                    sudoku.insertarValor(fila - 1, columna - 1, valor);
+                    break;
+
+                case 3:
+                    // Mostrar el tablero actual
+                    sudoku.mostrarTablero();
+                    break;
+
+                case 4:
+                    // Guardar la partida
+                    System.out.println("Ingrese el nombre del archivo para guardar la partida: ");
+                    String nombreArchivo = scanner.next();
+                    sudoku.guardarPartida(nombreArchivo);
+                    break;
+
+                case 5:
+                    // Reproducir una partida guardada
+                    System.out.println("Ingrese el nombre del archivo a reproducir: ");
+                    String archivo = scanner.next();
+                    sudoku.reproducirPartida(archivo);
+                    break;
+
+                case 6:
+                    // Salir del programa
+                    System.out.println("Saliendo del juego.");
+                    continuar = false;
+                    break;
+
+                default:
+                    System.out.println("Opción no válida. Inténtalo de nuevo.");
+                    break;
+            }
+        }
     }
 }
