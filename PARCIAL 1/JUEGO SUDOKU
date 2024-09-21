@@ -5,8 +5,10 @@ import java.io.File;
 import java.util.Random;
 
 public class Sudoku {
-    private int[][] tablero;
-    private StringBuilder registroMovimientos;  // Para almacenar los movimientos
+    // Clase Sudoku
+
+    private int[][] tablero;  // Atributo no estático
+    private StringBuilder registroMovimientos;  // Atributo no estático
 
     // Constructor para inicializar el tablero vacío
     public Sudoku() {
@@ -14,7 +16,7 @@ public class Sudoku {
         registroMovimientos = new StringBuilder();
     }
 
-    // Mostrar el tablero en pantalla
+    // Método no estático para mostrar el tablero en pantalla
     public void mostrarTablero() {
         for (int i = 0; i < 9; i++) {
             if (i % 3 == 0 && i != 0) {
@@ -30,7 +32,7 @@ public class Sudoku {
         }
     }
 
-    // Llenar el tablero con una cantidad aleatoria de números
+    // Método no estático para llenar el tablero con una cantidad aleatoria de números
     public void llenarTableroAleatoriamente(int cantidad) {
         Random rand = new Random();
         int llenadas = 0;
@@ -46,7 +48,7 @@ public class Sudoku {
         }
     }
 
-    // Insertar un valor en el tablero
+    // Método no estático para insertar un valor en el tablero
     public boolean insertarValor(int fila, int columna, int valor) {
         Scanner scanner = new Scanner(System.in);
 
@@ -73,17 +75,15 @@ public class Sudoku {
         return false;
     }
 
-    // Verificar si el valor es válido según las reglas del Sudoku
+    // Método no estático para verificar si el valor es válido según las reglas del Sudoku
     private boolean esValido(int fila, int columna, int valor) {
-        // Verificar fila
+        // Método puro (no modifica el estado del objeto)
         for (int i = 0; i < 9; i++) {
             if (tablero[fila][i] == valor) return false;
         }
-        // Verificar columna
         for (int i = 0; i < 9; i++) {
             if (tablero[i][columna] == valor) return false;
         }
-        // Verificar cuadro 3x3
         int cuadroFila = (fila / 3) * 3;
         int cuadroColumna = (columna / 3) * 3;
         for (int i = cuadroFila; i < cuadroFila + 3; i++) {
@@ -94,12 +94,12 @@ public class Sudoku {
         return true;
     }
 
-    // Método para registrar el movimiento
+    // Método no estático para registrar el movimiento
     private void registrarMovimiento(int fila, int columna, int valor) {
         registroMovimientos.append("Fila: " + (fila + 1) + ", Columna: " + (columna + 1) + ", Valor: " + valor + "\n");
     }
 
-    // Guardar la partida en un archivo de texto
+    // Método no estático para guardar la partida en un archivo de texto
     public void guardarPartida(String nombreArchivo) {
         try (FileWriter writer = new FileWriter(nombreArchivo)) {
             writer.write(registroMovimientos.toString());
@@ -109,7 +109,7 @@ public class Sudoku {
         }
     }
 
-    // Reproducir la partida desde el archivo
+    // Método no estático para reproducir la partida desde el archivo
     public void reproducirPartida(String nombreArchivo) {
         try (Scanner scanner = new Scanner(new File(nombreArchivo))) {
             while (scanner.hasNextLine()) {
@@ -125,7 +125,7 @@ public class Sudoku {
 
     // Método principal para ejecutar el programa
     public static void main(String[] args) {
-        Sudoku sudoku = new Sudoku();
+        Sudoku sudoku = new Sudoku();  // Creación de un objeto Sudoku
         sudoku.llenarTableroAleatoriamente(20);
         sudoku.mostrarTablero();
 
