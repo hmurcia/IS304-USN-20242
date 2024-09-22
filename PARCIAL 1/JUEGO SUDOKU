@@ -1,3 +1,7 @@
+
+///yusmel barrios trujillo
+ ing.sistemas
+///
 public class Matriz {
     // Atributos de la Matriz
     protected int[][] datos;  // Datos de la Matriz
