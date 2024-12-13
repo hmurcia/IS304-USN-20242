@@ -1,0 +1,441 @@
+
+///yusmel barrios trujillo
+ ing.sistemas
+///
+public class Matriz {
+    // Atributos de la Matriz
+    protected int[][] datos;  // Datos de la Matriz
+    protected int filas;      // Número de filas
+    protected int columnas;   // Número de columnas
+
+    // Constructor para inicializar la matriz con dimensiones específicas
+    public Matriz(int filas, int columnas) {
+        this.filas = filas;
+        this.columnas = columnas;
+        datos = new int[filas][columnas];
+    }
+
+    // Método para obtener el valor en una posición específica
+    public int getValor(int fila, int columna) {
+        if (esPosicionValida(fila, columna)) {
+            return datos[fila][columna];
+        } else {
+            throw new IndexOutOfBoundsException("Posición inválida en la matriz.");
+        }
+    }
+
+    // Método para establecer un valor en una posición específica
+    public void setValor(int fila, int columna, int valor) {
+        if (esPosicionValida(fila, columna)) {
+            datos[fila][columna] = valor;
+        } else {
+            throw new IndexOutOfBoundsException("Posición inválida en la matriz.");
+        }
+    }
+
+    // Método para verificar si una posición está dentro de los límites de la matriz
+    protected boolean esPosicionValida(int fila, int columna) {
+        return fila >= 0 && fila < filas && columna >= 0 && columna < columnas;
+    }
+
+    // Método para mostrar la matriz en pantalla
+    public void mostrarMatriz() {
+        for (int i = 0; i < filas; i++) {
+            for (int j = 0; j < columnas; j++) {
+                System.out.print(datos[i][j] + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    // Método para obtener el número de filas
+    public int getFilas() {
+        return filas;
+    }
+
+    // Método para obtener el número de columnas
+    public int getColumnas() {
+        return columnas;
+    }
+}
+
+/// clase Sudoku
+import java.util.Scanner;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.File;
+import java.util.Random;
+import java.util.InputMismatchException;
+
+public class Sudoku extends Matriz {
+    // Atributos adicionales de Sudoku
+    private StringBuilder registroMovimientos;  // Registro de los movimientos realizados
+    private int contadorMovimientos;            // Contador de los movimientos
+
+    // Constructor para inicializar el tablero vacío heredado de Matriz
+    public Sudoku() {
+        super(9, 9);  // Inicializa una matriz de 9x9
+        registroMovimientos = new StringBuilder();
+        contadorMovimientos = 0;
+    }
+
+    // Método para mostrar el tablero en formato de Sudoku
+    @Override
+    public void mostrarMatriz() {
+        for (int i = 0; i < filas; i++) {
+            if (i % 3 == 0 && i != 0) {
+                System.out.println("------+-------+------");
+            }
+            for (int j = 0; j < columnas; j++) {
+                if (j % 3 == 0 && j != 0) {
+                    System.out.print("| ");
+                }
+                System.out.print(datos[i][j] == 0 ? ". " : datos[i][j] + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    // Método para llenar el tablero con una cantidad aleatoria de números
+    public void llenarTableroAleatoriamente(int cantidad) {
+        Random rand = new Random();
+        int llenadas = 0;
+        while (llenadas < cantidad) {
+            int fila = rand.nextInt(filas);
+            int columna = rand.nextInt(columnas);
+            int valor = rand.nextInt(9) + 1;  // Valores entre 1 y 9
+
+            if (datos[fila][columna] == 0 && esValido(fila, columna, valor)) {
+                datos[fila][columna] = valor;
+                registrarMovimiento(fila, columna, valor);
+                llenadas++;
+            }
+        }
+    }
+
+    // Método para insertar un valor en el tablero
+    public boolean insertarValor(int fila, int columna, int valor, Scanner scanner) {
+        // Validar los límites de la entrada
+        if (fila < 0 || fila >= filas || columna < 0 || columna >= columnas || valor < 1 || valor > 9) {
+            System.out.println("Entrada inválida.");
+            return false;
+        }
+
+        // Verificar si la posición ya está ocupada
+        if (datos[fila][columna] != 0) {
+            System.out.println("La posición ya está ocupada con el valor " + datos[fila][columna] + ". ¿Desea cambiarlo? (s/n)");
+            try {
+                String respuesta = scanner.next();
+                if (!respuesta.equalsIgnoreCase("s")) {
+                    return false;
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Entrada inválida. Inténtalo de nuevo.");
+                return false;
+            }
+        }
+
+        // Verificar si el valor es válido para esa posición
+        if (esValido(fila, columna, valor)) {
+            datos[fila][columna] = valor;  // Insertar el valor en el tablero
+            registrarMovimiento(fila, columna, valor);  // Registrar el movimiento
+            contadorMovimientos++;
+
+            System.out.println("Valor " + valor + " insertado en la fila " + (fila + 1) + ", columna " + (columna + 1) + ".");  // Mostrar confirmación
+            mostrarMatriz();  // Mostrar el tablero actualizado
+
+            // Verificar si la fila, columna o cuadro 3x3 están completos
+            if (filaCompleta(fila)) {
+                System.out.println("¡Fila " + (fila + 1) + " completada!");
+            }
+
+            if (columnaCompleta(columna)) {
+                System.out.println("¡Columna " + (columna + 1) + " completada!");
+            }
+
+            if (cuadroCompleto(fila, columna)) {
+                System.out.println("¡Cuadro 3x3 completado!");
+            }
+
+            // Verificar si el tablero está completo y es válido
+            if (juegoCompleto()) {
+                System.out.println("¡Juego completado! Todos los números están colocados correctamente.");
+            }
+
+            return true;
+        }
+
+        System.out.println("El valor no es válido.");
+        return false;
+    }
+
+    // Método para verificar si el valor es válido según las reglas del Sudoku
+    private boolean esValido(int fila, int columna, int valor) {
+        // Verifica la fila
+        for (int i = 0; i < columnas; i++) {
+            if (datos[fila][i] == valor) return false;
+        }
+        // Verifica la columna
+        for (int i = 0; i < filas; i++) {
+            if (datos[i][columna] == valor) return false;
+        }
+        // Verifica el cuadro 3x3
+        int cuadroFila = (fila / 3) * 3;
+        int cuadroColumna = (columna / 3) * 3;
+        for (int i = cuadroFila; i < cuadroFila + 3; i++) {
+            for (int j = cuadroColumna; j < cuadroColumna + 3; j++) {
+                if (datos[i][j] == valor) return false;
+            }
+        }
+        return true;
+    }
+
+    // Método para registrar el movimiento
+    private void registrarMovimiento(int fila, int columna, int valor) {
+        registroMovimientos.append("Fila: " + (fila + 1) + ", Columna: " + (columna + 1) + ", Valor: " + valor + "\n");
+    }
+
+    // Método para guardar la partida en un archivo de texto
+    public void guardarPartida(String nombreArchivo) {
+        try (FileWriter writer = new FileWriter(nombreArchivo)) {
+            // Guardar el registro de movimientos
+            writer.write("MOVIMIENTOS:\n");
+            writer.write(registroMovimientos.toString());
+
+            // Guardar el estado del tablero
+            writer.write("\nESTADO_TABLERO:\n");
+            for (int i = 0; i < filas; i++) {
+                for (int j = 0; j < columnas; j++) {
+                    writer.write(datos[i][j]1
+                     + " ");
+                }
+                writer.write("\n");
+            }
+
+            System.out.println("Partida guardada en " + nombreArchivo);
+        } catch (IOException e) {
+            System.out.println("Error al guardar la partida.");
+        }
+    }
+
+    // Método para reproducir la partida desde el archivo
+    public void reproducirPartida(String nombreArchivo) {
+        try (Scanner fileScanner = new Scanner(new File(nombreArchivo))) {
+            boolean leyendoMovimientos = false;
+            boolean leyendoEstado = false;
+
+            while (fileScanner.hasNextLine()) {
+                String linea = fileScanner.nextLine();
+
+                if (linea.equals("MOVIMIENTOS:")) {
+                    leyendoMovimientos = true;
+                    leyendoEstado = false;
+                    continue;
+                }
+
+                if (linea.equals("ESTADO_TABLERO:")) {
+                    leyendoMovimientos = false;
+                    leyendoEstado = true;
+                    continue;
+                }
+
+                if (leyendoMovimientos) {
+                    System.out.println(linea);
+
+                    // Parsear la línea para extraer fila, columna y valor
+                    String[] partes = linea.split(", ");
+                    if (partes.length != 3) continue;  // Validar formato
+
+                    int fila = Integer.parseInt(partes[0].split(": ")[1]) - 1;
+                    int columna = Integer.parseInt(partes[1].split(": ")[1]) - 1;
+                    int valor = Integer.parseInt(partes[2].split(": ")[1]);
+
+                    // Insertar el valor en el tablero sin registrar nuevamente el movimiento
+                    datos[fila][columna] = valor;
+
+                    // Mostrar el tablero actualizado
+                    mostrarMatriz();
+
+                    Thread.sleep(1000);  // Pausa para reproducir el movimiento lentamente
+                }
+
+                if (leyendoEstado) {
+                    String[] valores = linea.trim().split(" ");
+                    for (int j = 0; j < columnas; j++) {
+                        if (!valores[j].isEmpty()) {
+                            datos[fileScanner.getLineNumber() - 1][j] = Integer.parseInt(valores[j]);
+                        }
+                    }
+                    mostrarMatriz();
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Error al leer el archivo.");
+        } catch (InterruptedException e) {
+            System.out.println("Error en la reproducción.");
+        }
+    }
+
+    // Método para verificar si una fila está completa
+    private boolean filaCompleta(int fila) {
+        boolean[] presente = new boolean[9];
+        for (int i = 0; i < columnas; i++) {
+            int valor = datos[fila][i];
+            if (valor == 0 || presente[valor - 1]) return false;  // Si hay un 0 o un duplicado
+            presente[valor - 1] = true;
+        }
+        return true;  // Todos los números del 1 al 9 están presentes
+    }
+
+    // Método para verificar si una columna está completa
+    private boolean columnaCompleta(int columna) {
+        boolean[] presente = new boolean[9];
+        for (int i = 0; i < filas; i++) {
+            int valor = datos[i][columna];
+            if (valor == 0 || presente[valor - 1]) return false;
+            presente[valor - 1] = true;
+        }
+        return true;
+    }
+
+    // Método para verificar si un cuadro 3x3 está completo
+    private boolean cuadroCompleto(int fila, int columna) {
+        boolean[] presente = new boolean[9];
+        int cuadroFila = (fila / 3) * 3;
+        int cuadroColumna = (columna / 3) * 3;
+        for (int i = cuadroFila; i < cuadroFila + 3; i++) {
+            for (int j = cuadroColumna; j < cuadroColumna + 3; j++) {
+                int valor = datos[i][j];
+                if (valor == 0 || presente[valor - 1]) return false;
+                presente[valor - 1] = true;
+            }
+        }
+        return true;
+    }
+
+    // Método para verificar si el juego está completo y es válido
+    private boolean juegoCompleto() {
+        for (int i = 0; i < filas; i++) {
+            if (!filaCompleta(i) || !columnaCompleta(i)) {
+                return false;
+            }
+        }
+
+        // Verificar todos los cuadros 3x3
+        for (int i = 0; i < filas; i += 3) {
+            for (int j = 0; j < columnas; j += 3) {
+                if (!cuadroCompleto(i, j)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;  // El tablero está completo y es válido
+    }
+
+    // Método para obtener los movimientos realizados
+    public String obtenerMovimientos() {
+        return registroMovimientos.toString();
+    }
+
+    // Método principal que incluye el menú de opciones
+    public static void main(String[] args) {
+        Sudoku sudoku = new Sudoku();  // Creación de un objeto Sudoku
+        Scanner scanner = new Scanner(System.in);
+
+        boolean continuar = true;
+
+        while (continuar) {
+            System.out.println("\n--- Menú de Sudoku ---");
+            System.out.println("1. Mostrar tablero");
+            System.out.println("2. Insertar valor");
+            System.out.println("3. Llenar tablero aleatoriamente");
+            System.out.println("4. Guardar partida");
+            System.out.println("5. Reproducir partida");
+            System.out.println("6. Ver movimientos realizados"); // Nueva opción
+            System.out.println("7. Salir");
+
+            System.out.print("Seleccione una opción: ");
+            int opcion;
+            try {
+                opcion = scanner.nextInt();
+            } catch (InputMismatchException e) {
+                System.out.println("Entrada inválida. Por favor, ingrese un número del 1 al 7.");
+                scanner.next();  // Limpiar el buffer
+                continue;
+            }
+
+            switch (opcion) {
+                case 1:
+                    sudoku.mostrarMatriz();
+                    break;
+
+                case 2:
+                    System.out.print("Ingrese fila, columna y valor (1-9) (o -1 para salir de la inserción): ");
+                    try {
+                        int fila = scanner.nextInt() - 1;
+                        if (fila == -2) {
+                            System.out.println("Saliendo de la inserción.");
+                            break;
+                        }
+                        int columna = scanner.nextInt() - 1;
+                        int valor = scanner.nextInt();
+                        sudoku.insertarValor(fila, columna, valor, scanner);
+                    } catch (InputMismatchException e) {
+                        System.out.println("Entrada inválida. Por favor, ingrese números enteros.");
+                        scanner.next();  // Limpiar el buffer
+                    }
+                    break;
+
+                case 3:
+                    System.out.print("Ingrese la cantidad de celdas a llenar aleatoriamente: ");
+                    try {
+                        int cantidad = scanner.nextInt();
+                        if (cantidad < 0 || cantidad > 81) {
+                            System.out.println("Cantidad inválida. Debe estar entre 0 y 81.");
+                            break;
+                        }
+                        sudoku.llenarTableroAleatoriamente(cantidad);
+                        sudoku.mostrarMatriz();
+                    } catch (InputMismatchException e) {
+                        System.out.println("Entrada inválida. Por favor, ingrese un número entero.");
+                        scanner.next();  // Limpiar el buffer
+                    }
+                    break;
+
+                case 4:
+                    System.out.print("Ingrese el nombre del archivo para guardar la partida: ");
+                    String nombreArchivoGuardar = scanner.next();
+                    sudoku.guardarPartida(nombreArchivoGuardar);
+                    break;
+
+                case 5:
+                    System.out.print("Ingrese el nombre del archivo para reproducir la partida: ");
+                    String nombreArchivoReproducir = scanner.next();
+                    sudoku.reproducirPartida(nombreArchivoReproducir);
+                    break;
+
+                case 6:
+                    // Nueva opción: Mostrar movimientos
+                    System.out.println("\n--- Movimientos Realizados ---");
+                    String movimientos = sudoku.obtenerMovimientos();
+                    if (movimientos.isEmpty()) {
+                        System.out.println("No se han realizado movimientos aún.");
+                    } else {
+                        System.out.println(movimientos);
+                    }
+                    break;
+
+                case 7:
+                    continuar = false;
+                    System.out.println("Saliendo del juego.");
+                    break;
+
+                default:
+                    System.out.println("Opción inválida. Intente de nuevo.");
+            }
+        }
+
+        scanner.close();
+    }
+}
